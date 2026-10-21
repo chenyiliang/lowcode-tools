@@ -7,6 +7,8 @@ interface IOptions extends Partial<PluginContext> {
   entry: object;
   type: string;
   mainFile: string;
+  // rootDir 在所有调用点都会传入，这里覆盖 Partial<PluginContext> 的可选性
+  rootDir: string;
   generateMeta?: boolean;
 }
 
@@ -63,7 +65,8 @@ export default (config: WebpackChain, { rootDir, entry, type, pkg, mainFile, gen
     .end()
     .type('javascript/auto');
 
-  if (type === 'plugin' && generateMeta && pkg.lcMeta) {
+  const lcMeta = pkg?.lcMeta;
+  if (type === 'plugin' && generateMeta && lcMeta) {
     ['tsx', 'jsx'].forEach((ruleName) => {
       config.module.rule(ruleName).use('babel-loader').tap((options) => {
         return {
@@ -72,7 +75,7 @@ export default (config: WebpackChain, { rootDir, entry, type, pkg, mainFile, gen
             ...options.plugins,
             [require.resolve('./babelPluginMeta'), {
               filename: mainFile,
-              meta: pkg.lcMeta,
+              meta: lcMeta,
             }],
           ]
         }

@@ -6,7 +6,7 @@ import * as webpack from 'webpack';
 import isWsl from 'is-wsl';
 
 
-export default (config: WebpackChain, { pkg }) => {
+export default (config: WebpackChain, { pkg }: { pkg: { name?: string } & Record<string, unknown> }) => {
   setAssetsPath(config, { js: 'js', css: 'css' });
   config.merge({
     devServer: {

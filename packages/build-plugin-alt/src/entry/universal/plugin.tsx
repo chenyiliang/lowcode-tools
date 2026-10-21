@@ -3,7 +3,7 @@ import {
   plugins,
   skeleton,
 } from '@alilc/lowcode-engine';
-import { IPublicModelPluginContext } from '@alilc/lowcode-types';
+import { IPublicModelPluginContext, IPublicTypePlugin } from '@alilc/lowcode-types';
 import Logo from '../../builtIn/logo';
 import UndoRedo from '@alilc/lowcode-plugin-undo-redo';
 import ComponentsPane from '@alilc/lowcode-plugin-components-pane';
@@ -14,11 +14,16 @@ import { getPageSchema, saveSchema, resetSchema, preview } from './utils';
 import assets from '../../public/assets.json';
 
 ;
-export default async ({ type, demoPlugin = undefined }) => {
+interface IBasePluginOptions {
+  type: 'setter' | 'plugin';
+  demoPlugin?: IPublicTypePlugin;
+}
 
-  const registerPlugin = async (plugin) => {
+export default async ({ type, demoPlugin }: IBasePluginOptions) => {
+
+  const registerPlugin = async (plugin: IPublicTypePlugin) => {
     // 避免要调试的插件被二次注册
-    if (demoPlugin?.pluginName && plugin.pluginName === demoPlugin?.pluginName) {
+    if (demoPlugin?.pluginName && plugin.pluginName === demoPlugin.pluginName) {
       return;
     }
     await plugins.register(plugin);

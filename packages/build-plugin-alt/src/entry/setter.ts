@@ -9,7 +9,7 @@ import './universal/global.scss';
   await basePlugin({ type: 'setter' });
   setters.registerSetter('DemoSetter', DemoSetter);
 
-  init(document.getElementById('lce-container'), {
+  init(document.getElementById('lce-container') ?? undefined, {
     enableCondition: true,
     enableCanvasLock: true,
   });

@@ -1,46 +1,61 @@
 {
   "name": "@alilc/create-element",
   "version": "1.2.0",
-  "description": "",
-  "main": "lib/index.js",
+  "description": "Scaffolding CLI for Ali LowCode engine elements (component / setter / plugin / editor)",
+  "type": "module",
   "bin": {
-    "create-element": "lib/index.js"
+    "create-element": "./dist/index.mjs"
   },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc -w",
-    "build": "rm -rf lib && tsc",
-    "prepublishOnly": "npm run build",
+    "dev": "vite build --watch",
+    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true})\"",
+    "build": "pnpm run clean && vite build",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build",
     "pub": "npm publish --tag latest",
     "beta": "npm publish --tag beta"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/alibaba/lowcode-tools.git",
-    "directory": "packages/create-ali-lowcode"
+    "directory": "packages/create-element"
   },
   "author": "eternalsky",
   "license": "MIT",
   "dependencies": {
     "case": "^1.6.3",
-    "chalk": "^4.1.2",
-    "cross-spawn": "^7.0.3",
-    "dayjs": "^1.10.7",
-    "ejs": "^3.1.6",
-    "fie-api": "^3.1.9",
-    "fs-extra": "^10.0.0",
-    "glob": "^7.2.0",
-    "inquirer": "^8.1.2",
-    "shelljs": "^0.8.4",
-    "yargs": "^17.2.0"
+    "chalk": "^6.0.1",
+    "cross-spawn": "^7.0.6",
+    "dayjs": "^1.11.23",
+    "ejs": "^7.0.2",
+    "fie-api": "^3.1.12",
+    "fs-extra": "^11.4.1",
+    "glob": "^13.0.6",
+    "inquirer": "^14.2.3",
+    "yargs": "^18.2.0"
   },
   "devDependencies": {
-    "typescript": "4.6.2",
-    "@types/cross-spawn": "^6.0.2",
-    "@types/fs-extra": "^9.0.13",
-    "@types/glob": "^7.1.4",
-    "@types/node": "^16.7.8",
-    "@types/yargs": "^17.0.3"
+    "@types/cross-spawn": "^6.0.6",
+    "@types/ejs": "^3.1.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^26.6.5",
+    "@types/yargs": "^17.0.35",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-dts": "^5.1.2"
   },
   "publishConfig": {
     "access": "public",

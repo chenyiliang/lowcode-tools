@@ -1,0 +1,19 @@
+{
+  "name": "ali-lowcode-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LowCode Tools (scaffolding / templates / engine preset plugins) — React 19 + Vite",
+  "repository": "https://github.com/alibaba/lowcode-tools.git",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm --filter \"./packages/*\" --filter \"./packages/template-material/*\" build",
+    "clean": "pnpm --filter \"./packages/*\" --filter \"./packages/template-material/*\" --parallel clean",
+    "typecheck": "pnpm --filter \"./packages/*\" --filter \"./packages/template-material/*\" --parallel typecheck"
+  },
+  "devDependencies": {
+    "tslib": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["packages/*/src", "packages/template-material/*/src"],
+  "exclude": ["**/node_modules", "**/dist", "**/lib", "**/es", "**/test", "**/tests", "**/proj", "**/projectTemplate", "**/demo"]
+}

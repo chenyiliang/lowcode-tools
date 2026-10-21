@@ -79,7 +79,8 @@ const plugin: IPlugin = ({ context, registerTask, onGetWebpackConfig, onHook, lo
       // })
     }
 
-    onHook('after.start.devServer', ({ url }) => {
+    onHook('after.start.devServer', (arg) => {
+      const { url } = arg ?? {};
       if (inject) {
         if (openUrl) {
           openBrowser(openUrl);
@@ -87,18 +88,22 @@ const plugin: IPlugin = ({ context, registerTask, onGetWebpackConfig, onHook, lo
           openBrowser('https://lowcode-engine.cn/demo/demo-general/index.html?debug');
         }
       } else {
-        openBrowser(openUrl || url);
+        const target = openUrl || url;
+        if (target) {
+          openBrowser(target);
+        }
       }
     })
 
-    onHook('before.start.load', ({ args }) => {
+    onHook('before.start.load', (arg) => {
+      const { args } = arg ?? {};
       if (inject) {
         let host = '127.0.0.1';
         if (usePrivateIp) {
           host = getIp();
         }
         console.log(host);
-        makeInjectInfo({ pkg, host, port: args.port, type, library });
+        makeInjectInfo({ pkg, host, port: args?.port, type, library });
         injectApis();
       }
     });

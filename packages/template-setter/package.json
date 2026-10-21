@@ -2,8 +2,12 @@
   "name": "@alilc/lowcode-template-setter",
   "version": "1.0.1",
   "description": "Ali lowCode engine setter template",
-  "main": "index.js",
+  "files": [
+    "proj"
+  ],
   "scripts": {
+    "build": "node -e \"console.log('[@alilc/lowcode-template-setter] content-only template package (proj/): nothing to compile')\"",
+    "typecheck": "node -e \"console.log('skip: content-only template package')\"",
     "pub": "npm publish",
     "beta": "npm publish --tag beta"
   },
@@ -17,5 +21,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": "eternalsky",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-dts": "^5.1.2"
+  }
 }

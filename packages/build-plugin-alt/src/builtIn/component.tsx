@@ -2,7 +2,6 @@ import * as React from 'react';
 import './component.scss';
 
 export default class BuiltIn extends React.Component<{ custom: any }> {
-  props: { custom: any; };
   renderEmpty() {
     return (
       <div className="placeholder">Setter 设置的值会显示在这里</div>

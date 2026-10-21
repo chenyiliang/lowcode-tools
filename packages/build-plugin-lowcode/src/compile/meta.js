@@ -31,7 +31,7 @@ module.exports = async ({
   lowcodeDir = "lowcode",
   userOptions,
   type = "react",
-  package,
+  package: pkg,
 }) => {
   const { babelPlugins = [], babelOptions = [], alias } = userOptions;
   const exportsData = {
@@ -66,8 +66,8 @@ module.exports = async ({
         .replace(/\.ts(x)?('|")/g, "$2")
         .replace(/\\\\/g, "/");
       const targetPath = `${lowcodeDir}_${target}`;
-      if (!package.files.includes(`${targetPath}/`)) {
-        package.files.push(`${targetPath}/`);
+      if (!pkg.files.includes(`${targetPath}/`)) {
+        pkg.files.push(`${targetPath}/`);
       }
       const entryName = getAvailableFileName({ fileName, lowcodeDir, rootDir });
       exportsData[fileNameEntryMap[fileName]][targetExportsMap[target]] = `./${targetPath}/${entryName}.js`;
@@ -80,8 +80,8 @@ module.exports = async ({
       fs.writeFileSync(distFilePath, code, "utf-8");
     });
   });
-  package.exports = {
-    ...package.exports,
+  pkg.exports = {
+    ...pkg.exports,
     ...exportsData,
   };
 };

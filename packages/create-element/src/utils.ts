@@ -6,7 +6,7 @@ export const getInstallPath = () => {
   return path.join(homeDir, '.altrc');
 }
 
-export const transformFileName = (fileName) => {
+export const transformFileName = (fileName: string): string => {
   if (fileName === '_gitignore') {
     return '.gitignore';
   }

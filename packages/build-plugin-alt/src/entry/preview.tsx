@@ -1,4 +1,4 @@
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React, { useState } from 'react';
 import Loading from '@alifd/next/lib/loading';
 import { buildComponents, assetBundle, AssetList, AssetLevel, AssetLoader } from '@alilc/lowcode-utils';
@@ -9,7 +9,13 @@ const SamplePreview = () => {
   const [data, setData] = useState({} as any);
 
   async function init() {
-    const packages = JSON.parse(window.localStorage.getItem('packages') || '');
+    interface StoredPackage {
+      package: string;
+      library?: string;
+      urls?: string[];
+      renderUrls?: string[];
+    }
+    const packages: StoredPackage[] = JSON.parse(window.localStorage.getItem('packages') || '[]');
     const projectSchema = JSON.parse(window.localStorage.getItem(SAVE_KEY)!);
     const { componentsMap: componentsMapArray, componentsTree } = projectSchema;
     const componentsMap: any = {};
@@ -20,10 +26,12 @@ const SamplePreview = () => {
     console.info('componentsMap is :', componentsMapArray);
     console.info('schema from storage is :', schema);
 
-    const libraryMap = {};
+    const libraryMap: Record<string, string> = {};
     const libraryAsset: AssetList = [];
     packages.forEach(({ package: pkg, library, urls, renderUrls }) => {
-      libraryMap[pkg] = library;
+      if (library) {
+        libraryMap[pkg] = library;
+      }
       if (renderUrls) {
         libraryAsset.push(renderUrls);
       } else if (urls) {
@@ -39,7 +47,7 @@ const SamplePreview = () => {
     // TODO asset may cause pollution
     const assetLoader = new AssetLoader();
     await assetLoader.load(libraryAsset);
-    const components = buildComponents(libraryMap, componentsMap, undefined);
+    const components = buildComponents(libraryMap, componentsMap, () => null);
     console.log('components', components);
 
     setData({
@@ -63,4 +71,7 @@ const SamplePreview = () => {
   );
 };
 
-ReactDOM.render(<SamplePreview />, document.getElementById('ice-container'));
+const container = document.getElementById('ice-container');
+if (container) {
+  createRoot(container).render(<SamplePreview />);
+}

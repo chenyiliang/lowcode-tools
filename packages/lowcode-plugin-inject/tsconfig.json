@@ -1,22 +1,16 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "ES6",
-    "target": "ES5",
-    "jsx": "react",
-    "allowJs": false,
-    "moduleResolution": "node",
-    "lib": ["DOM", "ES6"],
-    "noImplicitAny": false,
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "src"
   ],
   "exclude": [
-    "node_modules",
+    "**/node_modules",
+    "**/dist",
     "**/*.spec.ts"
   ]
 }

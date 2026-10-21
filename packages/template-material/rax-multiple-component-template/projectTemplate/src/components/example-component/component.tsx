@@ -7,11 +7,11 @@ export interface ComponentProps {
   /**
    * 名称
    */
-  name: string;
+  name?: string;
   /**
    * 子节点
    */
-  children: any;
+  children?: any;
 }
 
 /**
@@ -20,19 +20,18 @@ export interface ComponentProps {
  * @constructor
  */
 function ExampleComponent(props: ComponentProps, ref: any) {
+  // React 19 移除了函数组件的 defaultProps，改用默认参数值（行为等价）
+  const { name = '标题', children } = props;
   return (
     <View ref={ref} className="container">
-      <Text className="name">{props.name || ''}</Text>
-      <Text className="content">{props.children}</Text>
+      <Text className="name">{name || ''}</Text>
+      <Text className="content">{children}</Text>
     </View>
   );
 }
 
 const RefComponent = forwardRef(ExampleComponent as ForwardRefRenderFunction<any, ComponentProps>);
 
-RefComponent.defaultProps = {
-  name: '标题',
-};
 RefComponent.displayName = 'ExampleComponent';
 
 export default RefComponent;

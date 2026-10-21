@@ -1,4 +1,5 @@
 import { IPublicModelPluginContext, IPublicEnumPluginRegisterLevel } from '@alilc/lowcode-types';
+import type { IPluginConfig } from './types';
 import { getInjectedResource, injectAssets, type InjectOptions } from './utils';
 import Icon from './icon';
 import { Pane } from './pane';
@@ -7,38 +8,49 @@ import { InjectConfig } from './controller';
 
 const injectConfig = new InjectConfig();
 
-let injectedPluginConfigMap = null;
-let injectedPlugins = [];
+/** 注入插件名 -> 插件模块 */
+type InjectedPluginMap = Record<string, any>;
 
-export async function getInjectedPlugin(name: string, ctx: IPublicModelPluginContext, injectOptions?: InjectOptions) {
+let injectedPluginConfigMap: InjectedPluginMap | null = null;
+let injectedPlugins: any[] = [];
+
+export async function getInjectedPlugin(
+  name: string | undefined,
+  ctx: IPublicModelPluginContext,
+  injectOptions?: InjectOptions,
+): Promise<any> {
   if (!injectedPluginConfigMap) {
     injectedPluginConfigMap = {};
     injectedPlugins = await getInjectedResource('plugin', injectOptions);
     if (injectedPlugins && injectedPlugins.length > 0) {
       injectedPlugins.forEach((item: any) => {
-        const config = item.module(ctx);
-        injectedPluginConfigMap[config.name || item.module.pluginName] = item.module;
+        const config = item.module(ctx) as IPluginConfig;
+        injectedPluginConfigMap![config.name || item.module.pluginName] = item.module;
       });
     }
   }
+  if (name === undefined) return undefined;
   return injectedPluginConfigMap[name];
 }
 
-export function AppInject(ctx: IPublicModelPluginContext, options: any) {
-
+export function AppInject(ctx: IPublicModelPluginContext, options: InjectOptions = {}): IPluginConfig {
   const { workspace } = ctx;
 
-  const getInjectPlugin = async (plugin: any, pluginOptions: any, ctx?: IPublicModelPluginContext) => {
-    let pluginName = plugin.pluginName;
+  const getInjectPlugin = async (
+    plugin: any,
+    pluginOptions?: Record<string, unknown>,
+    pluginCtx: IPublicModelPluginContext = ctx,
+  ): Promise<any> => {
+    let pluginName: string | undefined = plugin.pluginName;
     if (!pluginName) {
-      const pluginConfig = plugin(ctx, pluginOptions);
+      const pluginConfig = plugin(pluginCtx, pluginOptions) as IPluginConfig;
       pluginName = pluginConfig.name;
     }
 
-    const injectedSameNamePlugin = await getInjectedPlugin(pluginName, ctx, options);
-    const resourceName  = ctx.editorWindow?.resource?.name;
-    const viewName = (ctx?.editorWindow?.currentEditorView as any)?.viewName;
-    const isGlobal = ctx?.registerLevel === IPublicEnumPluginRegisterLevel.Workspace;
+    const injectedSameNamePlugin = await getInjectedPlugin(pluginName, pluginCtx, options);
+    const resourceName = pluginCtx.editorWindow?.resource?.name;
+    const viewName = (pluginCtx?.editorWindow?.currentEditorView as any)?.viewName as string | undefined;
+    const isGlobal = pluginCtx?.registerLevel === IPublicEnumPluginRegisterLevel.Workspace;
     if (!injectedSameNamePlugin) {
       return plugin;
     }
@@ -48,7 +60,7 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
         return injectConfig.get(pluginName, 'global') ? injectedSameNamePlugin : plugin;
       }
 
-      injectConfig.set(pluginName, 'global', undefined, true)
+      injectConfig.set(pluginName, 'global', undefined, true);
       return injectedSameNamePlugin;
     }
 
@@ -63,10 +75,10 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
     injectConfig.set(pluginName, resourceName, viewName, true);
 
     return injectedSameNamePlugin;
-  }
+  };
 
-  ctx.config.set('customPluginTransducer', async (originPlugin: any, ctx: IPublicModelPluginContext, options) => {
-    const injectedSameNamePlugin = await getInjectPlugin(originPlugin, options, ctx);
+  ctx.config.set('customPluginTransducer', async (originPlugin: any, transducerCtx: IPublicModelPluginContext, transducerOptions?: Record<string, unknown>) => {
+    const injectedSameNamePlugin = await getInjectPlugin(originPlugin, transducerOptions, transducerCtx);
     return injectedSameNamePlugin;
   });
 
@@ -79,13 +91,12 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
     async init() {
       const subPluginName = '___injectPlugins___';
 
-      const subPlugin =  (ctx: IPublicModelPluginContext) => {
-        injectAssets(ctx, options)
+      const subPlugin = (subCtx: IPublicModelPluginContext) => {
+        injectAssets(subCtx as any, options);
         return {
-          async init() {
-          }
-        }
-      }
+          async init() {},
+        };
+      };
 
       subPlugin.pluginName = subPluginName;
       subPlugin.meta = {
@@ -102,24 +113,24 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
             continue;
           }
 
-          const resourceName  = workspace.window?.resource?.name;
+          const resourceName = workspace.window?.resource?.name;
           const currentEditorView = workspace.window?.currentEditorView;
-          const viewName = (currentEditorView as any)?.viewName;
+          const viewName = (currentEditorView as any)?.viewName as string | undefined;
           if (injectConfig.get(pluginName, resourceName, viewName) && !currentEditorView?.plugins.has(pluginName)) {
-            await currentEditorView?.plugins.register(injectedPluginConfigMap[pluginName], {
+            await currentEditorView?.plugins.register(injectedPluginConfigMap![pluginName], {
               autoInit: true,
             });
           }
 
           if (injectConfig.get(pluginName, 'global') && !workspace.plugins.has(pluginName)) {
-            await workspace.plugins.register(injectedPluginConfigMap[pluginName], {
+            await workspace.plugins.register(injectedPluginConfigMap![pluginName], {
               autoInit: true,
             });
           }
         }
 
         if (workspace.window?.currentEditorView && !workspace.window?.currentEditorView.plugins?.has(subPlugin.pluginName)) {
-          await workspace.window?.currentEditorView.plugins.register(subPlugin)
+          await workspace.window?.currentEditorView.plugins.register(subPlugin);
         }
       });
 
@@ -139,8 +150,8 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
           width: '600px',
           canSetFixed: false,
         },
-        content: (props) => {
-          return <Pane {...props} injectConfig={injectConfig} />
+        content: (props: any) => {
+          return <Pane {...props} injectConfig={injectConfig} />;
         },
         contentProps: {
           pluginContext: ctx,
@@ -150,15 +161,15 @@ export function AppInject(ctx: IPublicModelPluginContext, options: any) {
             const injectedSetters = await getInjectedResource('vs', options);
             return {
               injectedSetters,
-            }
+            };
           },
           updateInjectConfig: (pluginName: string, resourceName: string, viewName: string, check: boolean) => {
-            injectConfig.set(pluginName, resourceName, viewName, check)
-            injectConfig.save()
-          }
+            injectConfig.set(pluginName, resourceName, viewName, check);
+            injectConfig.save();
+          },
         },
       });
-    }
-  }
-
+    },
+  };
 }
+

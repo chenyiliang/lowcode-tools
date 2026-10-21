@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  ILowCodePluginContext,
   plugins,
   project,
 } from '@alilc/lowcode-engine';
+import { IPublicModelPluginContext } from '@alilc/lowcode-types';
 import AliLowCodeEngineExt from '@alilc/lowcode-engine-ext';
 import { Button, Icon } from '@alifd/next';
 import UndoRedoPlugin from '@alilc/lowcode-plugin-undo-redo';
@@ -18,9 +18,17 @@ import Inject, { injectAssets } from '@alilc/lowcode-plugin-inject';
 import SimulatorResizer from '@alilc/lowcode-plugin-simulator-select';
 
 import Logo from './logo';
-import { preview, resetSchema, saveSchema } from 'src/utils';
+import { preview, resetSchema, saveSchema } from '../utils';
 
-const registerDefaultPlugins = async (presetConfig) => {
+interface IPresetConfig {
+  logo?: {
+    logo?: string;
+    href?: string;
+  };
+  [key: string]: any;
+}
+
+const registerDefaultPlugins = async (presetConfig?: IPresetConfig) => {
   await plugins.register(ManualPlugin);
 
   // await plugins.register(Inject);
@@ -32,7 +40,7 @@ const registerDefaultPlugins = async (presetConfig) => {
   SimulatorResizer.pluginName = 'SimulatorResizer';
   plugins.register(SimulatorResizer);
 
-  const builtinPluginRegistry = (ctx: ILowCodePluginContext) => {
+  const builtinPluginRegistry = (ctx: IPublicModelPluginContext) => {
     return {
       name: 'builtin-plugin-registry',
       async init() {
@@ -79,7 +87,7 @@ const registerDefaultPlugins = async (presetConfig) => {
   await plugins.register(builtinPluginRegistry);
 
   // 设置内置 setter 和事件绑定、插件绑定面板
-  const setterRegistry = (ctx: ILowCodePluginContext) => {
+  const setterRegistry = (ctx: IPublicModelPluginContext) => {
     const { setterMap, pluginMap } = AliLowCodeEngineExt;
     return {
       name: 'ext-setters-registry',
@@ -117,7 +125,7 @@ const registerDefaultPlugins = async (presetConfig) => {
   // 注册中英文切换
   await plugins.register(ZhEnPlugin);
 
-  const previewSample = (ctx: ILowCodePluginContext) => {
+  const previewSample = (ctx: IPublicModelPluginContext) => {
     return {
       name: 'previewSample',
       async init() {
@@ -142,7 +150,7 @@ const registerDefaultPlugins = async (presetConfig) => {
   await plugins.register(previewSample);
 
   // 注册保存面板
-  const saveSample = (ctx: ILowCodePluginContext) => {
+  const saveSample = (ctx: IPublicModelPluginContext) => {
     return {
       name: 'saveSample',
       async init() {
@@ -174,7 +182,7 @@ const registerDefaultPlugins = async (presetConfig) => {
           ),
         });
 
-        hotkey.bind('command+s', (e) => {
+        hotkey.bind('command+s', (e: KeyboardEvent) => {
           e.preventDefault();
           // saveSchema();
         });

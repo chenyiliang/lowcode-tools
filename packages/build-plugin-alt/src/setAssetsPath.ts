@@ -3,7 +3,8 @@ import { last } from 'lodash';
 import WebpackChain from 'webpack-chain';
 
 function getFilename(filePath?: string): string {
-  return last((filePath || '').split('/'));
+  // split('/') 至少返回一个元素，last() 恒有值；?? '' 只为满足 string 返回类型
+  return last((filePath || '').split('/')) ?? '';
 }
 
 export default function setAssetsPath(

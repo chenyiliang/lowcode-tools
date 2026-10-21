@@ -1,12 +1,12 @@
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
-import * as spawn from 'cross-spawn';
-import { pascal } from 'case';
-import * as ejs from 'ejs';
-import * as dayjs from 'dayjs';
+import spawn from 'cross-spawn';
+import Case from 'case';
+import ejs from 'ejs';
+import dayjs from 'dayjs';
 import * as glob from 'glob';
-import * as chalk from 'chalk'
-import { IAnswer } from './interface';
+import chalk from 'chalk';
+import { IAnswer, InitOptions } from './interface';
 import { getInstallPath, transformFileName } from './utils';
 
 export default class InitFunc {
@@ -17,23 +17,23 @@ export default class InitFunc {
   answers: IAnswer;
   prefix: string;
   useBeta: boolean;
-  constructor({ argv, answers, templatePkg, prefix }) {
-    this.projectName = argv['_'][0] || './';
+  constructor({ argv, answers, templatePkg, prefix }: InitOptions) {
+    this.projectName = String(argv['_'][0] || './');
     this.installPath = getInstallPath();
     this.templatePkg = templatePkg;
     this.copyPath = path.join(process.cwd(), this.projectName);
     this.answers = answers;
     this.prefix = prefix;
-    this.useBeta = argv.beta;
+    this.useBeta = Boolean(argv.beta);
   }
-  addPrefix(name) {
+  addPrefix(name: string): string {
     const prefix = this.prefix;
     if (new RegExp(`^${prefix}`).test(name)) {
       return name;
     }
     return `${prefix}-${name}`;
   }
-  isDirEmpty(dir) {
+  isDirEmpty(dir: string): boolean {
     return glob.sync('**', {
       cwd: dir,
       nodir: true,
@@ -58,7 +58,7 @@ export default class InitFunc {
   renderTpl() {
     const templatePath = path.join(this.installPath, 'node_modules', this.templatePkg, 'proj');
     const setterName = this.addPrefix(this.answers.projectName);
-    const setterComponentName = pascal(setterName);
+    const setterComponentName = Case.pascal(setterName);
     const renderData = {
       ...this.answers,
       name: setterName,

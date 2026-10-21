@@ -21,7 +21,7 @@ export default (config: WebpackChain, { pkg, type }: IOptions) => {
      ...args[0],
      __altUtilsName: JSON.stringify(`__lowcode-${type}-demo__`),
      __bundleType: JSON.stringify(type === 'plugin' ? 'designerPlugin' : 'setter'),
-     name: JSON.stringify(pkg.name),
+     name: JSON.stringify(pkg?.name ?? ''),
    }]
  });
 }

@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React, { useState } from 'react';
 import { Loading } from '@alifd/next';
 import { buildComponents, assetBundle, AssetLevel, AssetLoader } from '@alilc/lowcode-utils';
@@ -76,4 +76,7 @@ const SamplePreview = () => {
   );
 };
 
-ReactDOM.render(<SamplePreview />, document.getElementById('ice-container'));
+const container = document.getElementById('ice-container');
+if (container) {
+  createRoot(container).render(<SamplePreview />);
+}

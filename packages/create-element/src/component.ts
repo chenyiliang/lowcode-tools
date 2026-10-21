@@ -2,12 +2,13 @@ import * as path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { fs as fieFs } from 'fie-api';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import Base from './base';
 import { transformFileName } from './utils';
+import { IAnswer, IArgv, InitOptions } from './interface';
 
 class InitComponent extends Base {
-  constructor(options) {
+  constructor(options: InitOptions) {
     super(options);
   }
   renderTpl() {
@@ -27,7 +28,7 @@ class InitComponent extends Base {
   }
 };
 
-export default async (answers) => {
+export default async (answers: IAnswer) => {
   const promptList = [{
     type: 'list',
     name: 'packageType',
@@ -43,7 +44,7 @@ export default async (answers) => {
   }];
   const result = await inquirer.prompt(promptList);
   new InitComponent({
-    argv: yargs(hideBin(process.argv)).argv,
+    argv: (await yargs(hideBin(process.argv)).argv) as IArgv,
     answers: {
       ...result,
       ...answers,

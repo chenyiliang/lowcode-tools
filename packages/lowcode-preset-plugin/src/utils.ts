@@ -15,7 +15,7 @@ export const saveSchema = () => {
     SAVE_KEY,
     JSON.stringify(project.exportSchema())
   );
-  const packages = material.getAssets().packages;
+  const packages = material.getAssets()?.packages ?? [];
   window.localStorage.setItem(
     'packages',
     JSON.stringify(packages)
@@ -41,7 +41,7 @@ export const resetSchema = async () => {
     componentName: 'Page',
     fileName: 'sample',
   });
-  project.simulator.rerender();
+  project.simulator?.rerender();
   Message.success('成功重置页面');
 }
 
@@ -57,7 +57,7 @@ export const getPageSchemaFromLocalStorage = () => {
   return schema;
 }
 
-export const getPageSchema = async (type) => {
+export const getPageSchema = async (type?: string) => {
   const schema = JSON.parse(
     window.localStorage.getItem(SAVE_KEY) || '{}'
   );

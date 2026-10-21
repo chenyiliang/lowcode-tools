@@ -11,7 +11,13 @@ import * as logger from '../utils/logger';
 const app = new Koa();
 const router = new Router();
 
-async function checkUrl(item) {
+/** inject.json 里的一条资源记录（只用到 url 字段） */
+interface InjectResource {
+  url: string;
+  [key: string]: unknown;
+}
+
+async function checkUrl(item: InjectResource): Promise<InjectResource | undefined> {
   const { url } = item;
   try {
     await axios.head(url, {
@@ -22,11 +28,11 @@ async function checkUrl(item) {
   }
 }
 
-function makeJsonpStr(cbName, data) {
+function makeJsonpStr(cbName: string, data: unknown): string {
   return `;${cbName}(${JSON.stringify(data)})`
 }
 
-async function portIsOccupied(_port, _host) {
+async function portIsOccupied(_port: number, _host: string): Promise<boolean> {
   const server = net.createServer().listen(_port, _host);
   // eslint-disable-next-line no-shadow
   return new Promise((resolve) => {
@@ -59,7 +65,7 @@ const init = async () => {
     return;
   }
 
-  router.get('/apis/injectInfo', async (ctx, next) => {
+  router.get('/apis/injectInfo', async (ctx) => {
     ctx.res.setHeader('Access-Control-Allow-Origin', '*');
     ctx.res.setHeader(
       'Access-Control-Allow-Headers',
@@ -67,22 +73,24 @@ const init = async () => {
     );
     ctx.res.setHeader('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
     ctx.type = 'text/javascript';
-    const callbackName = ctx.query.callback || 'callback';
+    const rawCallback = ctx.query.callback;
+    const callbackName = (Array.isArray(rawCallback) ? rawCallback[0] : rawCallback) || 'callback';
     const filePath = getFilePath();
-    let data = {};
+    let cache: Record<string, InjectResource> = {};
     try {
-      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      cache = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, InjectResource>;
     } catch (err) {
       ctx.body = makeJsonpStr(callbackName, {
         success: false,
         content: [],
       });
+      return;
     }
-    data = Object.values(data);
+    let data: InjectResource[] = Object.values(cache);
 
-    data = uniqWith(data as any[], isEqual); // 去重
+    data = uniqWith(data, isEqual); // 去重
     // check inject 是否可访问
-    const checkData = (await Promise.all((data as any[]).map(checkUrl))).filter(Boolean);
+    const checkData = (await Promise.all(data.map(checkUrl))).filter(Boolean);
     ctx.body = makeJsonpStr(callbackName, {
       success: !isEmpty(data),
       content: checkData,

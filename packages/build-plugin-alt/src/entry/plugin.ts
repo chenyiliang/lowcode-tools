@@ -8,7 +8,7 @@ import './universal/global.scss';
   await plugins.register(DemoPlugin);
   await basePlugin({ type: 'plugin', demoPlugin: DemoPlugin });
 
-  init(document.getElementById('lce-container'), {
+  init(document.getElementById('lce-container') ?? undefined, {
     enableCondition: true,
     enableCanvasLock: true,
     disableDefaultSettingPanel: false,

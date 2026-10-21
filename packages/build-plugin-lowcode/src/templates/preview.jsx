@@ -14,7 +14,7 @@ import Renderer from "@ali/lowcode-rax-renderer";
 import UniversalDriver from 'driver-universal';
 const Loading = () => <div style={loadingStyle} className="lowcode-plugin-sample-preview-loading"> <h1>Loading...</h1> </div>;
 {{else}}
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React, { useState } from 'react';
 import { Loading } from '@alifd/next';
 import Renderer from '@alilc/lowcode-react-renderer';
@@ -89,5 +89,8 @@ const SamplePreview = () => {
 {{#if isRax}}
 render(<SamplePreview />, document.getElementById('ice-container'), { driver: UniversalDriver });
 {{else}}
-ReactDOM.render(<SamplePreview />, document.getElementById('ice-container'));
+const container = document.getElementById('ice-container');
+if (container) {
+  createRoot(container).render(<SamplePreview />);
+}
 {{/if}}

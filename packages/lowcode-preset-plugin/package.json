@@ -1,47 +1,64 @@
 {
   "name": "@alilc/lowcode-preset-plugin",
   "version": "0.1.2",
-  "description": "",
-  "main": "lib/index.js",
+  "description": "LowCodeEngine preset plugin collection",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
   "files": [
-    "lib",
-    "es",
     "dist"
   ],
   "scripts": {
-    "start": "build-scripts start",
-    "build": "build-scripts build --skip-demo",
-    "prepublishOnly": "npm run build",
+    "dev": "vite build --watch",
+    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true})\"",
+    "build": "pnpm run clean && vite build",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "mark.ck",
   "license": "MIT",
   "dependencies": {
-    "@alib/build-scripts": "^0.1.3",
-    "@alifd/next": "^1.25.27",
-    "@alilc/lowcode-plugin-code-editor": "^1.0.3",
-    "@alilc/lowcode-plugin-code-generator": "^1.0.5",
-    "@alilc/lowcode-plugin-components-pane": "^1.0.3",
-    "@alilc/lowcode-plugin-datasource-pane": "^1.0.7",
-    "@alilc/lowcode-plugin-inject": "^1.1.3",
-    "@alilc/lowcode-plugin-manual": "^1.0.3",
-    "@alilc/lowcode-plugin-schema": "^1.0.1",
-    "@alilc/lowcode-plugin-simulator-select": "^1.0.0",
-    "@alilc/lowcode-plugin-undo-redo": "^1.0.0",
-    "@alilc/lowcode-plugin-zh-en": "^1.0.0",
-    "@alilc/lowcode-types": "^1.1.6",
-    "build-plugin-component": "^1.12.0",
-    "prop-types": "^15.5.8",
-    "react": "^16.x",
-    "react-dom": "^16.x"
+    "@alifd/next": "^1.27.34",
+    "@alilc/lowcode-datasource-fetch-handler": "workspace:*",
+    "@alilc/lowcode-engine": "workspace:*",
+    "@alilc/lowcode-engine-ext": "workspace:*",
+    "@alilc/lowcode-plugin-code-editor": "workspace:*",
+    "@alilc/lowcode-plugin-code-generator": "workspace:*",
+    "@alilc/lowcode-plugin-components-pane": "workspace:*",
+    "@alilc/lowcode-plugin-datasource-pane": "workspace:*",
+    "@alilc/lowcode-plugin-inject": "workspace:*",
+    "@alilc/lowcode-plugin-manual": "workspace:*",
+    "@alilc/lowcode-plugin-schema": "workspace:*",
+    "@alilc/lowcode-plugin-simulator-select": "workspace:*",
+    "@alilc/lowcode-plugin-undo-redo": "workspace:*",
+    "@alilc/lowcode-plugin-zh-en": "workspace:*",
+    "@alilc/lowcode-types": "workspace:*",
+    "tslib": "^2.8.1"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@alilc/lowcode-datasource-fetch-handler": "^1.1.3",
-    "@alilc/lowcode-engine": "^1.0.15",
-    "@alilc/lowcode-react-renderer": "^1.1.6",
-    "@types/react": "^18.0.21",
-    "fs-extra": "^10.1.0",
-    "tsconfig-paths-webpack-plugin": "^3.2.0",
-    "webpack-bundle-analyzer": "^4.8.0"
+    "@alilc/lowcode-react-renderer": "workspace:*",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sass": "^1.105.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-dts": "^5.1.2"
   }
 }

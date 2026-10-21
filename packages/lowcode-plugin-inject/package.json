@@ -3,14 +3,27 @@
   "author": "ens",
   "version": "1.2.4",
   "description": "lowcode-plugin-inject",
-  "main": "lib/index.js",
-  "module": "es/index.js",
-  "README": "README.md",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "start": "npm run dev",
-    "dev": "build-scripts start",
-    "build": "build-scripts build",
-    "prepublishOnly": "npm run build",
+    "dev": "vite build --watch",
+    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true})\"",
+    "build": "pnpm run clean && vite build",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build",
     "beta": "npm publish --tag beta",
     "pub": "npm publish"
   },
@@ -24,27 +37,31 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@alifd/next": "^1.25.13",
-    "@alilc/lowcode-engine": "^1.0.0",
-    "@alilc/lowcode-types": "^1.1.2",
-    "@alilc/lowcode-utils": "^1.0.0",
+    "@alilc/lowcode-engine": "workspace:*",
+    "@alilc/lowcode-types": "workspace:*",
+    "@alilc/lowcode-utils": "workspace:*",
     "case": "^1.6.3",
-    "fetch-jsonp": "^1.2.1",
-    "query-string": "^7.1.0"
+    "fetch-jsonp": "^1.4.0",
+    "lodash": "^4.18.1",
+    "query-string": "^9.5.1",
+    "tslib": "^2.8.1"
   },
   "peerDependencies": {
-    "react": "^16.0.0"
+    "@alifd/next": "^1.27.34",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@alib/build-scripts": "^0.1.32",
-    "@alifd/theme-lowcode-light": "^0.2.1",
-    "@alilc/build-plugin-alt": "^1.0.0",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@recore/config": "^2.0.6",
-    "@types/react": "^16.0.3",
-    "build-plugin-fusion": "^0.1.19",
-    "react": "^16",
-    "react-dom": "^16"
+    "@types/lodash": "^4.17.26",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sass": "^1.105.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-dts": "^5.1.2"
   },
   "license": "MIT"
 }

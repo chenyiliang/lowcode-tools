@@ -1,64 +1,85 @@
-import { Checkbox, Table, Button } from "@alifd/next";
-import { IPublicModelPluginContext } from "@alilc/lowcode-types";
-import * as React from 'react';
-import { InjectConfig } from "./controller";
+import { Checkbox, Table, Button } from '@alifd/next';
+import { IPublicModelPluginContext } from '@alilc/lowcode-types';
+import React from 'react';
+import { InjectConfig, type IInjectConfig } from './controller';
 
-import './pane.scss'
+import './pane.scss';
 
-export function Pane(props: {
+interface InjectedSetterItem {
+  name: string;
+}
+
+interface EditorViewOption {
+  label: string;
+  value: string;
+}
+
+interface ResourceOption {
+  label: string;
+  value: string;
+  children?: EditorViewOption[];
+}
+
+interface InjectInfo {
+  injectedSetters?: InjectedSetterItem[];
+}
+
+export interface PaneProps {
   injectConfig: InjectConfig;
   pluginContext: IPublicModelPluginContext;
   updateInjectConfig: (pluginName: string, resourceName: string, viewName: string, check: boolean) => void;
-  getInjectInfo(): Promise<{
-    injectedSetters: any;
-  }>
-  injectedPluginConfigMap: any;
-}) {
-  const [injectInfo, setInjectInfo] = React.useState<{
-    injectedSetters?: any;
-  }>({});
-  const [dataSource, setDataSource] = React.useState([]);
+  getInjectInfo: () => Promise<InjectInfo>;
+  injectedPluginConfigMap: Record<string, any> | null;
+}
 
-  const { workspace } = props.pluginContext;
-  const options: any[] = (workspace as any).resourceTypeList.map(resource => {
-    return {
+interface InjectDataSourceRow {
+  pluginName: string;
+}
+
+const GLOBAL_OPTION: ResourceOption = {
+  label: '全局',
+  value: 'global',
+};
+
+export function Pane(props: PaneProps) {
+  const { injectConfig, pluginContext, updateInjectConfig, getInjectInfo, injectedPluginConfigMap } = props;
+  const [injectInfo, setInjectInfo] = React.useState<InjectInfo>({});
+  const [dataSource, setDataSource] = React.useState<InjectDataSourceRow[]>([]);
+
+  const { workspace } = pluginContext;
+  const resourceTypeList = (workspace as any).resourceTypeList ?? [];
+  const options: ResourceOption[] = [
+    GLOBAL_OPTION,
+    ...resourceTypeList.map((resource: any): ResourceOption => ({
       label: resource.description || resource.resourceName,
       value: resource.resourceName,
-      children: resource.editorViews?.map((view) => ({
-        label: view.viewName + '视图',
-        value: view.viewName
-      }))
-    }
-  });
+      children: resource.editorViews?.map((view: any): EditorViewOption => ({
+        label: `${view.viewName}视图`,
+        value: view.viewName,
+      })),
+    })),
+  ];
 
-  options.unshift({
-    label: '全局',
-    value: 'global',
-  });
-
-  const updateConfig = React.useCallback((config) => {
-    const newDataSource = Object.entries(config).map(([key, value]) => {
-      return {
-        pluginName: key
-      }
-    }).filter(d => props.injectedPluginConfigMap[d.pluginName]);
+  const updateConfig = React.useCallback((config: IInjectConfig) => {
+    const newDataSource: InjectDataSourceRow[] = Object.keys(config)
+      .map((pluginName) => ({ pluginName }))
+      .filter((row) => Boolean(injectedPluginConfigMap?.[row.pluginName]));
     setDataSource(newDataSource);
 
-    props.getInjectInfo().then(res => {
+    getInjectInfo().then((res) => {
       setInjectInfo(res);
     });
-  }, []);
+  }, [getInjectInfo, injectedPluginConfigMap]);
 
   React.useEffect(() => {
-    updateConfig(props.injectConfig.config);
-    props.injectConfig.onChange((config) => {
+    updateConfig(injectConfig.config);
+    const unsubscribe = injectConfig.onChange((config) => {
       updateConfig(config);
-    })
-  }, []);
+    });
+    return unsubscribe;
+  }, [injectConfig, updateConfig]);
 
-  const {
-    injectedSetters,
-  } = injectInfo;
+  const { injectedSetters } = injectInfo;
 
   if (!dataSource?.length && !injectedSetters?.length) {
     return (
@@ -67,8 +88,14 @@ export function Pane(props: {
           未检测到调试插件/组件
         </div>
       </div>
-    )
+    );
   }
+
+  const handleReset = () => {
+    injectConfig.clearAll();
+    injectConfig.save();
+    window.location.reload();
+  };
 
   return (
     <div className="inject-setting-panel">
@@ -76,71 +103,61 @@ export function Pane(props: {
         设计器插件：
       </span>
       <span style={{ float: 'right' }}>
-        <Button
-          size="small"
-          onClick={() => {
-            props.injectConfig.clearAll();
-            props.injectConfig.save();
-            window.location.reload();
-          }}
-        >重置插件配置</Button>
+        <Button size="small" onClick={handleReset}>重置插件配置</Button>
       </span>
       <Table className="inject-setting-panel-table" dataSource={dataSource}>
         <Table.Column title="插件名字" htmlTitle="插件" dataIndex="pluginName" />
-        <Table.Column title="调试注册视图" dataIndex="pluginName" cell={(pluginName, index, record) => (
-          <>
-            {
-              options.map(resource => {
+        <Table.Column
+          title="调试注册视图"
+          dataIndex="pluginName"
+          cell={(pluginName: string, _index: number, record: InjectDataSourceRow) => (
+            <>
+              {options.map((resource) => {
                 if (resource.children) {
                   return (
-                    <div>
-                      <span className="inject-setting-panel-label">{ resource.label }</span>
-                      {
-                        resource.children.map(view => (
-                          <Checkbox
-                            checked={props.injectConfig.get(pluginName, resource.value, view.value)}
-                            onChange={(checked: boolean) => {
-                              props.updateInjectConfig(record.pluginName, resource.value, view.value, checked);
-                            }}
-                          >
-                            { view.label }
-                          </Checkbox>
-                        ))
-                      }
+                    <div key={resource.value}>
+                      <span className="inject-setting-panel-label">{resource.label}</span>
+                      {resource.children.map((view) => (
+                        <Checkbox
+                          key={view.value}
+                          checked={injectConfig.get(pluginName, resource.value, view.value)}
+                          onChange={(checked: boolean) => {
+                            updateInjectConfig(record.pluginName, resource.value, view.value, checked);
+                          }}
+                        >
+                          {view.label}
+                        </Checkbox>
+                      ))}
                     </div>
-                  )
+                  );
                 }
                 return (
-                  <div>
-                    <span className="inject-setting-panel-label">{ resource.label }</span>
+                  <div key={resource.value}>
+                    <span className="inject-setting-panel-label">{resource.label}</span>
                     <Checkbox
-                      checked={props.injectConfig.get(pluginName, resource.value)}
+                      checked={injectConfig.get(pluginName, resource.value)}
                       onChange={(checked: boolean) => {
-                        props.updateInjectConfig(record.pluginName, resource.value, '', checked);
+                        updateInjectConfig(record.pluginName, resource.value, '', checked);
                       }}
-                    >
-                    </Checkbox>
+                    />
                   </div>
-                )
-              })
-            }
-          </>
-        )} />
+                );
+              })}
+            </>
+          )}
+        />
       </Table>
-      <InjectItem
-        title="Setter"
-        injectItems={injectedSetters}
-      />
+      <InjectItem title="Setter" injectItems={injectedSetters} />
     </div>
-  )
+  );
 }
 
-function InjectItem(props: {
-  title: string,
-  injectItems: {
-    name: string;
-  }[]
-}) {
+interface InjectItemProps {
+  title: string;
+  injectItems?: InjectedSetterItem[];
+}
+
+function InjectItem(props: InjectItemProps) {
   if (!props.injectItems || !props.injectItems.length) {
     return null;
   }
@@ -149,10 +166,12 @@ function InjectItem(props: {
     <div>
       <span className="inject-setting-panel-title">{props.title}：</span>
       <div className="inject-setting-panel-inject-item">
-        {props.injectItems && props.injectItems.map((item) => (
-          <span>{item.name}</span>
+        {props.injectItems.map((item) => (
+          <span key={item.name}>{item.name}</span>
         ))}
       </div>
     </div>
-  )
+  );
 }
+
+export default Pane;

@@ -5,25 +5,20 @@
   "files": [
     "projectTemplate/"
   ],
-  "main": "lib/index.js",
-  "module": "es/index.js",
-  "stylePath": "style.js",
   "scripts": {
-    "eslint": "eslint --cache --ext .js,.jsx ./",
-    "eslint:fix": "npm run eslint -- --fix",
-    "stylelint": "stylelint \"**/*.{css,scss,less}\"",
-    "lint": "npm run eslint && npm run stylelint",
-    "f2elint-scan": "f2elint scan",
-    "f2elint-fix": "f2elint fix"
+    "build": "node -e \"console.log('[@alilc/react-single-component-template] content-only template package (projectTemplate/): nothing to compile')\"",
+    "typecheck": "node -e \"console.log('skip: content-only template package')\""
   },
   "keywords": [
     "ice",
     "react",
     "component"
   ],
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {},
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-dts": "^5.1.2"
+  },
   "componentConfig": {
     "name": "ExampleComponent",
     "title": "demo component",

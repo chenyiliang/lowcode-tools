@@ -733,3 +733,8 @@ packages/lowcode-preset-plugin/node_modules/_yargs-parser@14.0.0@yargs-parser/RE
 packages/lowcode-preset-plugin/node_modules/_yargs-parser@14.0.0@yargs-parser/lib/tokenize-arg-string.js
 packages/lowcode-preset-plugin/node_modules/_yargs-parser@14.0.0@yargs-parser/node_modules/camelcase
 node_modules/
+# --- Vite 迁移后新增：构建产物统一忽略（原来靠 files 字段发布，dist 不入库） ---
+dist/
+packages/*/dist/
+packages/template-material/*/dist/
+*.tsbuildinfo

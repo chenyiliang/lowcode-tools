@@ -1,14 +1,18 @@
-#!/usr/bin/env node
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import * as path from 'path';
 import initComponent from './component';
 import initSetter from './setter';
 import initPlugin from './plugin';
 import initEditor from './editor';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers'
+import { hideBin } from 'yargs/helpers';
+import { IArgv, IAnswer, Initializer } from './interface';
 
-const getQuestions = ({ argv }) => {
+interface IPromptAnswer {
+  projectName: string;
+}
+
+const getQuestions = ({ argv }: { argv: IArgv }) => {
   return [
     {
       type: 'list',
@@ -37,8 +41,8 @@ const getQuestions = ({ argv }) => {
       type: 'input',
       name: 'projectName',
       message: '生态元素包名',
-      default(ans) {
-        const pathBaseName = path.basename(path.join(process.cwd(), argv._[0] || './'));
+      default() {
+        const pathBaseName = path.basename(path.join(process.cwd(), String(argv._[0] || './')));
         return pathBaseName;
       }
     },
@@ -46,7 +50,7 @@ const getQuestions = ({ argv }) => {
       type: 'input',
       name: 'description',
       message: '简要介绍生态元素',
-      default(ans) {
+      default(ans: IPromptAnswer) {
         return ans.projectName;
       },
     },
@@ -61,7 +65,7 @@ const getQuestions = ({ argv }) => {
   ];
 }
 
-const initMap = {
+const initMap: Record<string, Initializer> = {
   component: initComponent,
   setter: initSetter,
   plugin: initPlugin,
@@ -69,16 +73,17 @@ const initMap = {
 };
 
 const main = async () => {
-  const argv = yargs(hideBin(process.argv))
+  // yargs@18 的 .argv 是 Promise（@17 是同步），需要先 await 再交给问答逻辑
+  const argv = (await yargs(hideBin(process.argv))
     .options('beta', {
       type: 'boolean',
       describe: 'use beta template package to init',
       default: false,
     })
-    .argv;
+    .argv) as IArgv;
   const result = await inquirer.prompt(getQuestions({ argv }));
   const initializer = initMap[result.componentType];
-  await initializer(result);
+  await initializer(result as IAnswer);
 }
 
 main();

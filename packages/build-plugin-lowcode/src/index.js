@@ -243,7 +243,7 @@ function confirmRenderPlatforms(rootDir, platforms) {
 async function build(options, pluginOptions, execCompile) {
   const webPackConfig = getWebpackConfig('production');
   const { context, onHook } = options;
-  const { rootDir, pkg: package, userConfig = {}, commandArgs } = context;
+  const { rootDir, pkg, userConfig = {}, commandArgs } = context;
   const { alias = {} } = userConfig;
   const {
     components,
@@ -261,7 +261,7 @@ async function build(options, pluginOptions, execCompile) {
   !noParse &&
     (await initLowCodeSchema(
       rootDir,
-      package,
+      pkg,
       alias['@'] || componentsPath, // componentsPath
       metaFormat,
       metaFormat,
@@ -281,7 +281,7 @@ async function build(options, pluginOptions, execCompile) {
         rootDir,
         userOptions: userConfig,
         lowcodeDir,
-        package,
+        package: pkg,
       });
     })
   }
@@ -340,13 +340,13 @@ async function build(options, pluginOptions, execCompile) {
 
 async function start(options, pluginOptions) {
   const { registerTask, getAllTask, onGetWebpackConfig } = options;
-  const { rootDir, pkg: package, commandArgs } = options.context;
+  const { rootDir, pkg, commandArgs } = options.context;
   const { https } = commandArgs;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const {
-    package: packageName = package.name,
+    package: packageName = pkg.name,
     library = PARSED_NPM_NAME.uniqueName,
     umdUrls,
     renderUrls,
@@ -409,7 +409,7 @@ async function start(options, pluginOptions) {
     rootDir,
     params: {
       package: packageName,
-      version: package.version,
+      version: pkg.version,
       library,
       urls: JSON.stringify(renderUrls || umdUrls || devViewUrls),
       editUrls: JSON.stringify(editUrls || umdUrls || devViewUrls),
@@ -514,7 +514,7 @@ async function start(options, pluginOptions) {
 
 async function initLowCodeSchema(
   rootDir,
-  package,
+  pkg,
   componentsPath,
   devAlias,
   metaFormat,
@@ -528,7 +528,7 @@ async function initLowCodeSchema(
   }
   INIT_STATE = true;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const entry = getEntry(rootDir, entryPath);
   const lowcodeDirExists = await fse.existsSync(path.resolve(rootDir, lowcodeDir));
@@ -553,8 +553,8 @@ async function initLowCodeSchema(
       formatComponentSchema({
         componentName: PARSED_NPM_NAME.uniqueName,
         npm: {
-          package: package.name,
-          version: package.version,
+          package: pkg.name,
+          version: pkg.version,
           exportName: 'default',
           main: 'lib/index.js',
           destructuring: false,
@@ -587,7 +587,7 @@ async function initLowCodeSchema(
       )
     ) {
       const schema = formatComponentSchema(item);
-      if (schema.title === package.name) {
+      if (schema.title === pkg.name) {
         schema.title = schema.componentName;
       }
       const { snippets } = schema;
@@ -620,9 +620,9 @@ export default {
 
 async function bundleMetaV2(options, pluginOptions, execCompile, metaType) {
   const { registerTask, getAllTask, onGetWebpackConfig, context } = options;
-  const { rootDir, pkg: package, userConfig = {} } = context;
+  const { rootDir, pkg, userConfig = {} } = context;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const metaExportName = `${PARSED_NPM_NAME.uniqueName}Meta`;
   let { components } = pluginOptions || {};
@@ -692,8 +692,8 @@ async function bundleMetaV2(options, pluginOptions, execCompile, metaType) {
       metaExportName,
       categories: JSON.stringify(categories),
       npmInfo: JSON.stringify(npmInfo || {}),
-      version: package.version,
-      packageName: package.name,
+      version: pkg.version,
+      packageName: pkg.name,
       basicLibraryVersion: JSON.stringify(customBasicLibraryVersion || BASIC_LIBRARY_VERSION),
     },
   });
@@ -722,12 +722,12 @@ async function bundleEditorView(
   execCompile,
 ) {
   const { registerTask, getAllTask, onGetWebpackConfig } = options;
-  const { rootDir, pkg: package } = options.context;
+  const { rootDir, pkg } = options.context;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const {
-    package: packageName = package.name,
+    package: packageName = pkg.name,
     library = PARSED_NPM_NAME.uniqueName,
     umdUrls,
     renderUrls,
@@ -769,7 +769,7 @@ async function bundleEditorView(
   _setterMap += '\n}';
   const indexJsParams = {
     package: packageName,
-    version: package.version,
+    version: pkg.version,
     library,
     urls: JSON.stringify(
       renderUrls ||
@@ -926,9 +926,9 @@ async function bundleEditorView(
 
 async function bundleRenderView(options, pluginOptions, platform, execCompile) {
   const { registerTask, getAllTask, onGetWebpackConfig } = options;
-  const { rootDir, pkg: package } = options.context;
+  const { rootDir, pkg } = options.context;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const {
     library = PARSED_NPM_NAME.uniqueName,
@@ -1008,13 +1008,13 @@ async function bundleRenderView(options, pluginOptions, platform, execCompile) {
 
 async function bundleAssets(options, pluginOptions, metaTypes, renderTypes, execCompile) {
   const { onHook } = options;
-  const { rootDir, pkg: package } = options.context;
+  const { rootDir, pkg } = options.context;
   if (!PARSED_NPM_NAME) {
-    PARSED_NPM_NAME = parseNpmName(package.name);
+    PARSED_NPM_NAME = parseNpmName(pkg.name);
   }
   const metaExportName = `${PARSED_NPM_NAME.uniqueName}Meta`;
   const {
-    package: packageName = package.name,
+    package: packageName = pkg.name,
     baseUrl,
     library = PARSED_NPM_NAME.uniqueName,
     umdUrls,
@@ -1074,7 +1074,7 @@ async function bundleAssets(options, pluginOptions, metaTypes, renderTypes, exec
     ['daily', 'prod', 'dev'].map(async (item) => {
       const _baseUrl =
         (baseUrl && baseUrl[item]) ||
-        `${UNPKG_BASE_URL_MAP[engineScope]}/${package.name}@${package.version}`;
+        `${UNPKG_BASE_URL_MAP[engineScope]}/${pkg.name}@${pkg.version}`;
       let urls;
       let metaUrl;
       const metaUrls = {};
@@ -1123,7 +1123,7 @@ async function bundleAssets(options, pluginOptions, metaTypes, renderTypes, exec
         rootDir,
         params: {
           package: packageName,
-          version: package.version,
+          version: pkg.version,
           library,
           urls: _urls ? JSON.stringify(_urls) : urls,
           editUrls: _editUrls ? JSON.stringify(_editUrls) : urls,
@@ -1185,7 +1185,7 @@ async function bundleAssets(options, pluginOptions, metaTypes, renderTypes, exec
       }
       fse.outputFileSync(targetPath, JSON.stringify(require(originPath), null, 2));
     });
-    updatePackage(rootDir, baseUrl, lowcodeDir, buildTarget, engineScope, package);
+    updatePackage(rootDir, baseUrl, lowcodeDir, buildTarget, engineScope, pkg);
   });
   return assetsPaths;
 }
@@ -1196,9 +1196,9 @@ function updatePackage(
   lowcodeDir = 'lowcode',
   buildTarget = 'build',
   engineScope = '@ali',
-  package,
+  pkg,
 ) {
-  const packageData = package;
+  const packageData = pkg;
   let { componentConfig } = packageData;
   if (!componentConfig) {
     componentConfig = {};
@@ -1215,8 +1215,8 @@ function updatePackage(
     ...packageData.lcMeta,
     type: 'component',
   };
-  if (!package.dependencies['@babel/runtime']) {
-    package.dependencies['@babel/runtime'] = '^7.0.0';
+  if (!pkg.dependencies['@babel/runtime']) {
+    pkg.dependencies['@babel/runtime'] = '^7.0.0';
   }
   const processMainFieldForExports = (entry) => {
     if (!entry) return entry;
@@ -1231,7 +1231,7 @@ function updatePackage(
 
 async function bundleComponentMeta(webPackConfig, options, pluginOptions, execCompile) {
   const { registerTask, getAllTask, onGetWebpackConfig, context, onHook } = options;
-  const { rootDir, pkg: package } = context;
+  const { rootDir, pkg } = context;
   let { components, engineScope = '@ali', } = pluginOptions || {};
   const {
     devAlias,
@@ -1265,8 +1265,8 @@ async function bundleComponentMeta(webPackConfig, options, pluginOptions, execCo
         component: componentMetaName,
         execCompile,
         componentMetaExportName,
-        version: package.version,
-        packageName: package.name,
+        version: pkg.version,
+        packageName: pkg.name,
       },
     });
     return componentMetaPath;
